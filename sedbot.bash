@@ -44,6 +44,10 @@ connect() {
     if (($?)); then
         return $?
     fi
+    sendmsg MODE "$NICK +B"
+    if (($?)); then
+        return $?
+    fi
 	return 0
 }
 
