@@ -3,14 +3,15 @@
 #license: GNU GPL v3+
 
 
-SERVER=irc.example.net # the IRC server to connect to
-PORT=6667 # port to connect to
+SERVER=irc.tilde.team # the IRC server to connect to
+PASS= # server pass
+PORT=6697 # port to connect to
 NICK=sedbot # bot's nickname
 LOGIN=sedbot # bot's username
 REALNAME=sedbot # bot's name
-CHANNELS=('#example') # array of channels to autojoin at start
-IRC_LOG=~/sedbot.log # irc message log
-ERROR_LOG=~/sedbot.err # log of errors, events and used regexps
+CHANNELS=('#meta') # array of channels to autojoin at start
+IRC_LOG=sedbot.log # irc message log
+ERROR_LOG=sedbot.err # log of errors, events and used regexps
 
 MAX_LINE_LENGTH=400 # truncate lines to this many bytes
 SLEEP_JOIN=3 # sleep after identifying before autojoining channels
@@ -31,7 +32,7 @@ connect() {
 	if (($?)); then
 		return $?
 	fi
-	sendmsg NICK "$NICK"
+    sendmsg PASS "$PASS"
 	if (($?)); then
 		return $?
 	fi
@@ -39,6 +40,10 @@ connect() {
 	if (($?)); then
 		return $?
 	fi
+	sendmsg NICK "$NICK"
+    if (($?)); then
+        return $?
+    fi
 	return 0
 }
 
