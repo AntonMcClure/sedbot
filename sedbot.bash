@@ -3,14 +3,15 @@
 #license: GNU GPL v3+
 
 
-SERVER=irc.example.net # the IRC server to connect to
+SERVER=localhost # the IRC server to connect to
+PASS= # server pass
 PORT=6667 # port to connect to
 NICK=sedbot # bot's nickname
 LOGIN=sedbot # bot's username
 REALNAME=sedbot # bot's name
-CHANNELS=('#example') # array of channels to autojoin at start
-IRC_LOG=~/sedbot.log # irc message log
-ERROR_LOG=~/sedbot.err # log of errors, events and used regexps
+CHANNELS=('#meta', '#team', '#yourtilde') # array of channels to autojoin at start
+IRC_LOG=sedbot.log # irc message log
+ERROR_LOG=sedbot.err # log of errors, events and used regexps
 
 MAX_LINE_LENGTH=400 # truncate lines to this many bytes
 SLEEP_JOIN=3 # sleep after identifying before autojoining channels
@@ -31,7 +32,7 @@ connect() {
 	if (($?)); then
 		return $?
 	fi
-	sendmsg NICK "$NICK"
+    sendmsg PASS "$PASS"
 	if (($?)); then
 		return $?
 	fi
@@ -39,6 +40,14 @@ connect() {
 	if (($?)); then
 		return $?
 	fi
+	sendmsg NICK "$NICK"
+    if (($?)); then
+        return $?
+    fi
+    sendmsg MODE "$NICK +B"
+    if (($?)); then
+        return $?
+    fi
 	return 0
 }
 
@@ -81,7 +90,7 @@ parse_user_host() { # rawsource
 parse_ctcp() { # message
 	ctcp="$(sed 's/^\x01\([A-Za-z]\+\)\x01$/\U\1/g' <<< "$1")"
 	if [[ $ctcp != "$1" ]]; then
-		sed : <<< "$ctcp"
+		sed ":1" <<< "$ctcp"
 		return 0
 	fi
 	return 1
@@ -91,7 +100,7 @@ parse_action() { # message
 	cmd="$(sed 's/^\x01\([A-Za-z]\+\) \(.\+\)\x01$/\U\1/g' <<< "$1")"
 	msg="$(sed 's/^\x01\([A-Za-z]\+\) \(.\+\)\x01$/\2/g' <<< "$1")"
 	if [[ $cmd == 'ACTION' && -n $msg ]]; then
-		sed : <<< "$msg"
+		sed ":1" <<< "$msg"
 		return 0
 	fi
 	return 1
@@ -100,7 +109,7 @@ parse_action() { # message
 parse_targeted_nick() { # message
 	target="$(sed 's/^\([^ :,/]\+\)[:,]\? .\+/\1/' <<< "$1")"
 	if [[ -n $target && $target != "$1" ]]; then
-		sed : <<< "$target"
+		sed ":1" <<< "$target"
 		return 0
 	fi
 	return 1
@@ -109,7 +118,7 @@ parse_targeted_nick() { # message
 parse_targeted_msg() { # message
 	target="$(sed 's/^[^ :,/]\+[:,]\? \(.\+\)/\1/' <<< "$1")"
 	if [[ -n $target && $target != "$1" ]]; then
-		sed : <<< "$target"
+		sed ":1" <<< "$target"
 		return 0
 	fi
 	return 1
@@ -242,7 +251,7 @@ regex() { # regex, text
 
 	t="$target"
 	for re in "${regexps[@]}"; do
-		sed : <<< "$re" >&2
+		sed ":1" <<< "$re" >&2
 		target="$(sed -e "$re" <<< "$target")"
 	done
 	target="$(trimrn <<< "$target")"
@@ -277,7 +286,7 @@ sendmsg() { # command, args, message
 	if [[ -n $line ]]; then
 		line="$(trimrn <<< "$line" | sed 's/^\(.\{,'"$MAX_LINE_LENGTH"'\}\).*/\1/')"
 		echo "$(date +%s.%N) >>> $line" >&4
-		sed : <<< "$line" >&3
+		sed ":1" <<< "$line" >&3
 		if (($? == 0)); then
 			return 0
 		else
@@ -294,7 +303,7 @@ readmsg() {
 	IFS= read -r -u 3 -t "$READ_TIMEOUT" line
 	success=$?
 	echo "$(date +%s.%N) <<< $line" >&4
-	sed : <<< "$line"
+	sed ":1" <<< "$line"
 	return $success
 }
 
