@@ -5,7 +5,7 @@ After=sedbot.service
 [Service]
 Type=simple
 WorkingDirectory=/home/bot/sedbot
-ExecStart=./sedbot.bash
+ExecStart=/home/bot/sedbot/sedbot.bash
 Restart=always
 RestartSec=5
 StartLimitInterval=60s
