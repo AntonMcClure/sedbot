@@ -2,26 +2,8 @@
 #sedbot: a regex IRC bot in bash and sed
 #license: GNU GPL v3+
 
-
-SERVER=localhost # the IRC server to connect to
-PASS= # server pass
-PORT=6667 # port to connect to
-NICK=sedbot # bot's nickname
-LOGIN=sedbot # bot's username
-REALNAME=sedbot # bot's name
-CHANNELS=('#meta', '#team', '#yourtilde') # array of channels to autojoin at start
-IRC_LOG=sedbot.log # irc message log
-ERROR_LOG=sedbot.err # log of errors, events and used regexps
-
-MAX_LINE_LENGTH=400 # truncate lines to this many bytes
-SLEEP_JOIN=3 # sleep after identifying before autojoining channels
-SLEEP_RECONNECT=10 # sleep before reconnecting on disconnect
-READ_TIMEOUT=300 # seconds before reconnect if no line is read
-ACCEPT_INVITES=1 # 0 to ignore invites
-
-
-###############################################################################
-
+# source configs
+. .cfg
 
 exec 4> >(tee -a -- "$IRC_LOG") 2> >(tee -a -- "$ERROR_LOG" >&2)
 
