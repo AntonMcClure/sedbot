@@ -3,7 +3,14 @@
 #license: GNU GPL v3+
 
 # source configs
-. .cfg
+if [[ -f .cfg ]]; then
+    . .cfg
+else
+    printf "configs not found\n"
+    printf "  cp .cfg.example .cfg\n"
+    printf "adjust settings and restart\n"
+    exit 1
+fi
 
 exec 4> >(tee -a -- "$IRC_LOG") 2> >(tee -a -- "$ERROR_LOG" >&2)
 
@@ -29,6 +36,14 @@ connect() {
     sendmsg MODE "$NICK +B"
     if (($?)); then
         return $?
+    fi
+    # log in to services account if we have configs
+    if [ -f account.ini ]; then
+        . account.ini
+        sendmsg SQUERY "NickServ IDENTIFY ${account} ${password}"
+        if (($?)); then
+            return $?
+        fi
     fi
 	return 0
 }
