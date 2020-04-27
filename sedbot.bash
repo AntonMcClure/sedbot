@@ -25,7 +25,7 @@ connect() {
 	if (($?)); then
 		return $?
 	fi
-	sendmsg USER "$LOGIN 8 *" "$REALNAME"
+	sendmsg USER "$LOGIN 0 *" "$REALNAME"
 	if (($?)); then
 		return $?
 	fi
@@ -36,14 +36,6 @@ connect() {
     sendmsg MODE "$NICK +B"
     if (($?)); then
         return $?
-    fi
-    # log in to services account if we have configs
-    if [ -f account.ini ]; then
-        . account.ini
-        sendmsg SQUERY "NickServ IDENTIFY ${account} ${password}"
-        if (($?)); then
-            return $?
-        fi
     fi
 	return 0
 }
@@ -314,6 +306,21 @@ readloop() {
 		cmd="$(parse_command "$line")"
 
 		case $cmd in
+            001)
+                # log in to services account if we have configs
+                if [ -f account.ini ]; then
+                    . account.ini
+                    sendmsg SQUERY "NickServ IDENTIFY ${account} ${password}"
+                    if (($?)); then
+                        return $?
+                    fi
+                fi
+
+                for ch in "${CHANNELS[@]}"; do
+                    sendmsg JOIN "$ch"
+                done
+                ;;
+
 			PING)
 				sendmsg PONG "$(parse_args "$line")" "$(parse_message "$line")"
 				;;
@@ -406,9 +413,6 @@ main() {
 	while :; do
 		if connect; then
 			sleep "$SLEEP_JOIN"
-			for ch in "${CHANNELS[@]}"; do
-				sendmsg JOIN "$ch"
-			done
 			readloop
 		fi
 		echo 'reconnecting in 10 seconds...' >&2
