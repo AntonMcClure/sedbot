@@ -10,7 +10,8 @@ Restart=always
 RestartSec=5
 StartLimitInterval=60s
 StartLimitBurst=3
+User=sedbot
+Group=sedbot
 
 [Install]
 WantedBy=default.target
-
