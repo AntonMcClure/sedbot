@@ -1,6 +1,6 @@
 #!/bin/bash
 #sedbot: a regex IRC bot in bash and sed
-#license: GNU GPL v3+
+#license: GNU AGPL v3+
 
 # source configs
 if [[ -f .cfg ]]; then
@@ -17,7 +17,12 @@ exec 4> >(tee -a -- "$IRC_LOG") 2> >(tee -a -- "$ERROR_LOG" >&2)
 declare -A messages
 
 connect() {
-	exec 3<>"/dev/tcp/$SERVER/$PORT"
+	if [[ $SSL = 1 ]]
+	then
+		exec 3<>"openssl s_client $SERVER:$PORT"
+	else
+		exec 3<>"/dev/tcp/$SERVER/$PORT"
+	fi
 	if (($?)); then
 		return $?
 	fi
