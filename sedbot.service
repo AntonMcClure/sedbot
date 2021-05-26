@@ -4,7 +4,7 @@ After=sedbot.service
 
 [Service]
 Type=simple
-WorkingDirectory=/home/anton/git/sedbot
+WorkingDirectory=/home/sedbot/sedbot
 ExecStart=/bin/bash sedbot.bash
 Restart=always
 RestartSec=5
